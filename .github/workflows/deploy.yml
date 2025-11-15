@@ -1,0 +1,46 @@
+name: Build and Deploy to cPanel
+
+on:
+  push:
+    branches:
+      - main  # Or 'master', whatever your main branch is
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest # Use a standard virtual machine
+
+    steps:
+      # 1. Get your code
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # 2. Set up Node.js
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '22' # Use your Node.js version
+
+      # 3. Install dependencies
+      - name: Install dependencies
+        run: npm install
+
+      # 4. Build the project (This runs 'npm run build')
+      - name: Build React App
+        run: npm run build
+        env:
+          VITE_EMAILJS_SERVICE_ID: ${{ secrets.VITE_EMAILJS_SERVICE_ID }}
+          VITE_EMAILJS_TEMPLATE_ID: ${{ secrets.VITE_EMAILJS_TEMPLATE_ID }}
+          VITE_EMAILJS_PUBLIC_KEY: ${{ secrets.VITE_EMAILJS_PUBLIC_KEY }}
+          VITE_EMAILJS_AUTOREPLY_TEMPLATE_ID: ${{ secrets.VITE_EMAILJS_AUTOREPLY_TEMPLATE_ID }}
+          # Add your VITE_... keys to GitHub Secrets too!
+
+      # 5. Upload the 'dist' folder to cPanel via FTP
+      - name: Deploy to cPanel
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          local-dir: ./dist/ # The folder to upload
+          server-dir: ${{ secrets.FTP_PATH }} # Where to upload it
+          clean-up: true # Deletes old files for you
