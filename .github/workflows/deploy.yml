@@ -3,7 +3,7 @@ name: Build and Deploy to cPanel
 on:
   push:
     branches:
-      - main  # Or 'master', whatever your main branch is
+      - master  # Or 'master', whatever your main branch is
 
 jobs:
   build-and-deploy:
