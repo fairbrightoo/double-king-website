@@ -171,9 +171,9 @@ const Hero = () => {
                 />
 
                 {/* text layers */}
-                <h1 className="special-font hero-heading absolute bottom-5 right-5 z-40 text-blue-75">
+                <h2 className="special-font hero-heading absolute bottom-5 right-5 z-40 text-blue-75">
                     L<b>u</b>x<b>u</b>ry re<b>d</b>efi<b>n</b>ed
-                </h1>
+                </h2>
 
                 <div className="absolute left-0 top-0 z-40 size-full">
                     <div className="mt-24 px-5 sm:px-10">
