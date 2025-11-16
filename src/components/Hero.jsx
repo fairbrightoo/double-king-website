@@ -181,7 +181,7 @@ const Hero = () => {
                             Do<b>u</b>ble Ki<b>n</b>g
                         </h1>
                         <p className="mb-5 max-w-64 font-robert-regular text-blue-100">
-                            {/*Building More Than Just Homes.*/} <br /> Creating Your Lasting Legacy
+                            Building More Than Just Homes. <br /> Creating Your Lasting Legacy
                         </p>
 
                         <a href="#about-section">
