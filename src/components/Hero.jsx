@@ -4,6 +4,7 @@ import { TiLocationArrow } from "react-icons/ti";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/all";
+import AnimatedLogoLoader from "./AnimatedLogoLoader.jsx"; // Assuming this is your logo loader
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -11,18 +12,22 @@ const Hero = () => {
     const [currentIndex, setCurrentIndex] = useState(1);
     const [hasClicked, setHasClicked] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
-    const [loadedVideos, setLoadedVideos] = useState(0);
+    // const [loadedVideos, setLoadedVideos] = useState(0); // <-- REMOVED
 
     const totalVideos = 4;
 
-    // ==== Separate refs (one ref per video) ====
-    const miniVideoRef = useRef(null);    // small preview inside mask
-    const nextVideoRef = useRef(null);    // the "expanded" next video after click
-    const baseVideoRef = useRef(null);    // always-playing background/base video
+    const miniVideoRef = useRef(null);
+    const nextVideoRef = useRef(null);
+    const baseVideoRef = useRef(null);
 
-    const handleVideoLoad = () => {
-        setLoadedVideos((prev) => prev + 1);
-    };
+    // Ref to track loading state inside listeners
+    const isLoadingRef = useRef(true);
+    useEffect(() => {
+        isLoadingRef.current = isLoading;
+    }, [isLoading]);
+
+
+    // const handleVideoLoad = () => { ... }; // <-- REMOVED
 
     const getVideoSrc = (index) => `videos/hero-${index}x.mp4`;
     const upcomingVideoIndex = (currentIndex % totalVideos) + 1;
@@ -32,11 +37,7 @@ const Hero = () => {
         setCurrentIndex(upcomingVideoIndex);
     };
 
-    useEffect(() => {
-        if (loadedVideos >= totalVideos - 1) {
-            setIsLoading(false);
-        }
-    }, [loadedVideos]);
+    // useEffect(() => { ... }, [loadedVideos]); // <-- REMOVED
 
     // iOS: attempt an early play on first touch so autoplay is unlocked
     useEffect(() => {
@@ -50,14 +51,50 @@ const Hero = () => {
         return () => window.removeEventListener("touchstart", tryUnlock);
     }, []);
 
-    // === GSAP: animation when user clicks mini preview ===
+    // --- NEW "RACE" LOADING LOGIC ---
+    useEffect(() => {
+        const video = baseVideoRef.current;
+        if (!video) return;
+
+        let failsafeTimer = null;
+
+        const hideLoader = () => {
+            // Check ref to prevent firing twice
+            if (!isLoadingRef.current) return;
+
+            isLoadingRef.current = false;
+            setIsLoading(false);
+
+            // Clean up both listeners
+            if (failsafeTimer) {
+                clearTimeout(failsafeTimer);
+            }
+            video.removeEventListener('canplaythrough', hideLoader);
+        };
+
+        // Path 1: The video loads successfully
+        video.addEventListener('canplaythrough', hideLoader);
+
+        // Path 2: The 2.5-second failsafe timer
+        failsafeTimer = setTimeout(hideLoader, 2500);
+
+        // Try to play (helps iOS)
+        video.play().catch(error => {
+            console.warn("Autoplay was prevented (normal on Low Power Mode):", error);
+        });
+
+        // Cleanup on unmount
+        return () => {
+            if (failsafeTimer) clearTimeout(failsafeTimer);
+            if (video) video.removeEventListener('canplaythrough', hideLoader);
+        };
+    }, []); // Runs once on mount
+
+    // === GSAP: animation when user clicks mini preview (Unchanged) ===
     useGSAP(
         () => {
             if (!hasClicked) return;
-
-            // Ensure next video is visible and animate it in
             gsap.set("#next-video", { visibility: "visible" });
-
             gsap.to("#next-video", {
                 transformOrigin: "center center",
                 scale: 1,
@@ -68,22 +105,15 @@ const Hero = () => {
                 onStart: () => {
                     try {
                         nextVideoRef.current?.play();
-                    } catch (e) {
-                        // ignore play errors
-                    }
+                    } catch (e) {}
                 },
             });
-
-            // Animate mini preview wrapper (scale-out or other effect)
             gsap.from("#mini-video-wrapper", {
                 transformOrigin: "center center",
                 scale: 0,
                 duration: 1.2,
                 ease: "power1.inOut",
             });
-
-            // If you want to also animate the base video slightly (fade/scale),
-            // you can do so here:
             gsap.fromTo(
                 "#base-video",
                 { opacity: 0.9, scale: 1.05 },
@@ -93,13 +123,12 @@ const Hero = () => {
         { dependencies: [currentIndex, hasClicked], revertOnUpdate: true }
     );
 
-    // === GSAP: clip-path + scroll-trigger animation (restored) ===
+    // === GSAP: clip-path + scroll-trigger animation (Unchanged) ===
     useGSAP(() => {
         gsap.set("#video-frame", {
             clipPath: "polygon(14% 0%, 72% 0%, 90% 90%, 0% 100%)",
             borderRadius: "0 0 40% 10%",
         });
-
         gsap.from("#video-frame", {
             clipPath: "polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)",
             borderRadius: "0 0 0 0",
@@ -117,11 +146,7 @@ const Hero = () => {
         <div className="relative h-dvh w-screen overflow-x-hidden">
             {isLoading && (
                 <div className="flex-center absolute z-[100] h-dvh w-screen overflow-hidden bg-violet-50">
-                    <div className="three-body">
-                        <div className="three-body__dot" />
-                        <div className="three-body__dot" />
-                        <div className="three-body__dot" />
-                    </div>
+                    <AnimatedLogoLoader />
                 </div>
             )}
 
@@ -137,8 +162,9 @@ const Hero = () => {
                             muted
                             playsInline
                             preload="auto"
+                            poster="/videos/hero-poster.jpg" // <-- ADDED POSTER
                             className="size-64 origin-center scale-150 object-cover object-center"
-                            onLoadedData={handleVideoLoad}
+                            // onLoadedData={handleVideoLoad} // <-- REMOVED
                         />
                     </div>
                 </div>
@@ -152,8 +178,9 @@ const Hero = () => {
                     muted
                     playsInline
                     preload="auto"
+                    poster="/videos/hero-poster.jpg" // <-- ADDED POSTER
                     className="absolute-center invisible absolute z-20 size-64 object-cover object-center"
-                    onLoadedData={handleVideoLoad}
+                    // onLoadedData={handleVideoLoad} // <-- REMOVED
                 />
 
                 {/* BASE VIDEO (always visible / fallback) */}
@@ -166,8 +193,9 @@ const Hero = () => {
                     muted
                     playsInline
                     preload="auto"
+                    poster="/videos/hero-poster.jpg" // <-- ADDED POSTER
                     className="absolute left-0 top-0 size-full object-cover object-center"
-                    onLoadedData={handleVideoLoad}
+                    // onLoadedData={handleVideoLoad} // <-- REMOVED
                 />
 
                 {/* text layers */}

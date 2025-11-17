@@ -1,0 +1,50 @@
+.animated-logo-container {
+    /* Set the size of your loader */
+    width: 150px;
+    height: auto;
+}
+
+.animated-logo-container svg {
+    width: 100%;
+    height: 100%;
+}
+
+/* 1. Define the blinking animation */
+@keyframes blink {
+    0% { opacity: 0.2; }    /* Start faded */
+    25% { opacity: 1; }   /* Full brightness */
+    50% { opacity: 0.2; }   /* Fade out */
+    100% { opacity: 0.2; }  /* Stay faded */
+}
+
+/* 2. Apply the animation to all squares */
+#square1, #square2, #square3, #square4 {
+    animation: blink 2s infinite; /* 2-second loop */
+    opacity: 0.2; /* Start faded */
+}
+
+/* 3. Set delays for the clockwise effect */
+/* Based on the SVG code, the order seems to be:
+   - square2 (cls-1) = Top-Left
+   - square1 (cls-8) = Top-Right
+   - square3 (cls-5) = Bottom-Left
+   - square4 (cls-2) = Bottom-Right
+*/
+
+/* Clockwise: Top-Left -> Top-Right -> Bottom-Right -> Bottom-Left */
+
+#square2 {
+    animation-delay: 0s;
+}
+
+#square1 {
+    animation-delay: 0.5s; /* 0.5s after top-left */
+}
+
+#square4 {
+    animation-delay: 1s;   /* 0.5s after top-right */
+}
+
+#square3 {
+    animation-delay: 1.5s; /* 0.5s after bottom-right */
+}
