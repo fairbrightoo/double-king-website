@@ -28,6 +28,19 @@ const PropertyContactForm = ({ onClose, property }) => {
         e.preventDefault();
         setIsSubmitting(true);
 
+        // This is your new "record to sheet" function
+        const recordToSheet = () => {
+            const formData = new FormData(formRef.current);
+            fetch(import.meta.env.VITE_GOOGLE_SHEET_WEB_APP_URL, {
+                method: "POST",
+                body: formData
+            }).then(res => res.json()).then(data => {
+                console.log("Google Sheet Response:", data);
+            }).catch(err => {
+                console.error("Google Sheet Error:", err);
+            });
+        };
+
         // emailjs.sendForm('YOUR_SERVICE_ID', 'YOUR_TEMPLATE_ID', formRef.current, 'YOUR_PUBLIC_KEY')
         emailjs.sendForm(
             import.meta.env.VITE_EMAILJS_SERVICE_ID,
@@ -36,6 +49,10 @@ const PropertyContactForm = ({ onClose, property }) => {
             import.meta.env.VITE_EMAILJS_PUBLIC_KEY
         )
             .then((result) => {
+                console.log("Both emails sent!");
+
+                // --- CALL THE NEW FUNCTION HERE ---
+                recordToSheet(); // <-- Add this line
                 setIsSubmitting(false);
                 setSubmitStatus('success');
                 e.target.reset();

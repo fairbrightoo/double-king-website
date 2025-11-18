@@ -38,6 +38,20 @@ const Contactform = ({ onClose }) => {
         e.preventDefault(); // Stop page reload
         setIsSubmitting(true);
 
+        // This is your new "record to sheet" function
+        const recordToSheet = () => {
+            const formData = new FormData(formRef.current);
+            // We fetch the data to our script URL
+            fetch(import.meta.env.VITE_GOOGLE_SHEET_WEB_APP_URL, {
+                method: "POST",
+                body: formData
+            }).then(res => res.json()).then(data => {
+                console.log("Google Sheet Response:", data);
+            }).catch(err => {
+                console.error("Google Sheet Error:", err);
+            });
+        };
+
         // Replace these with your actual IDs from Step 1
         // emailjs.sendForm('YOUR_SERVICE_ID', 'YOUR_TEMPLATE_ID', formRef.current, 'YOUR_PUBLIC_KEY')
         emailjs.sendForm(
@@ -58,6 +72,8 @@ const Contactform = ({ onClose }) => {
             })
             .then((result) => {
                 console.log("Both emails sent!");
+                // --- CALL THE NEW FUNCTION HERE ---
+                recordToSheet(); // <-- Add this line
                 setIsSubmitting(false);
                 setSubmitStatus('success');
                 e.target.reset(); // Clear the form

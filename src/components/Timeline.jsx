@@ -64,7 +64,7 @@ const TimelineItem = ({ item }) => {
 };
 
 
-const Timeline = () => {
+const Timeline = ({ isLoading }) => {
     const sectionRef = useRef(null);
     const pinRef = useRef(null);
     const contentContainerRef = useRef(null);
@@ -96,6 +96,9 @@ const Timeline = () => {
     // --- FIX END ---
 
     useGSAP(() => {
+
+        if (isLoading) return;
+
         const years = gsap.utils.toArray('.timeline-year');
         const items = gsap.utils.toArray('.timeline-item');
         const contentContainer = contentContainerRef.current;
@@ -201,12 +204,15 @@ const Timeline = () => {
 
         });
 
-    }, { scope: sectionRef });
+    }, {
+        scope: sectionRef,
+        dependencies: [isLoading]
+    });
 
     return (
         <section ref={sectionRef} className="bg-black text-white relative py-24 sm:py-32 pb-24 sm:pb-32 overflow-hidden">
 
-            <div ref={pinRef} className="container mx-auto px-4">
+            <div ref={pinRef} className="container mx-auto px-4 ">
 
                 <div className="text-center mb-16 md:mb-24">
                     <h2 className="text-4xl md:text-5xl font-bold bento-title special-font text-violet-300">
