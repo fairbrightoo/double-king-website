@@ -190,15 +190,8 @@ const Footer = ({ setIsContactOpen, setIsPrivacyOpen }) => {
                 {/* --- Developer Credit & Phone --- */}
                 <div className="mt-12 flex flex-col items-center justify-center gap-4 border-t border-neutral-700 pt-8 text-sm md:flex-row md:gap-6">
                     <p className="text-neutral-400">
-                        Developed by Engr Bright osisiogu
+                        Developed by Engr Bright Osisiogu
                     </p>
-                    <a
-                        href="tel:+2347045763306"
-                        className="flex items-center gap-2 text-neutral-400 transition-colors hover:text-white"
-                    >
-                        <FaPhoneAlt />
-                        <span>+2347045763306</span>
-                    </a>
                 </div>
 
             </div>
